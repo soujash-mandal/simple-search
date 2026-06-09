@@ -1,6 +1,9 @@
 package main
 
-import "sort"
+import (
+	"math"
+	"sort"
+)
 
 type SearchEngine struct {
 	Documents map[int]Document
@@ -27,19 +30,29 @@ func (s *SearchEngine) AddDocument(doc Document) {
 	}
 }
 
+func (s *SearchEngine) idf(term string) float64 {
+	df := len(s.Index[term])
+	if df == 0 {
+		return 0
+	}
+	N := len(s.Documents)
+	return math.Log(1 + float64(N)/float64(df))
+}
+
 func (s *SearchEngine) Search(query string) []Document {
 	tokens := tokenize(query)
 	if len(tokens) == 0 {
 		return nil
 	}
-	scores := make(map[int]int)
+	scores := make(map[int]float64)
 	for _, token := range tokens {
 		docFreqs, exists := s.Index[token]
 		if !exists {
 			continue
 		}
-		for id, tf := range docFreqs {
-			scores[id] += tf
+		idf := s.idf(token)
+		for docID, tf := range docFreqs {
+			scores[docID] += float64(tf) * idf
 		}
 	}
 	if len(scores) == 0 {
