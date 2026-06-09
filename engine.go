@@ -5,15 +5,22 @@ import (
 	"sort"
 )
 
+const (
+	k1 = 1.2
+	b  = 0.75
+)
+
 type SearchEngine struct {
-	Documents map[int]Document
-	Index     map[string]map[int]int
+	Documents  map[int]Document
+	Index      map[string]map[int]int
+	DocLengths map[int]int
 }
 
 func NewSearchEngine() *SearchEngine {
 	return &SearchEngine{
-		Documents: make(map[int]Document),
-		Index:     make(map[string]map[int]int),
+		Documents:  make(map[int]Document),
+		Index:      make(map[string]map[int]int),
+		DocLengths: make(map[int]int),
 	}
 }
 
@@ -22,6 +29,7 @@ func (s *SearchEngine) AddDocument(doc Document) {
 	titleTokens := tokenize(doc.Title)
 	contentTokens := tokenize(doc.Content)
 	tokens := append(titleTokens, contentTokens...)
+	s.DocLengths[doc.ID] = len(tokens)
 	for _, token := range tokens {
 		if _, exists := s.Index[token]; !exists {
 			s.Index[token] = make(map[int]int)
@@ -30,13 +38,31 @@ func (s *SearchEngine) AddDocument(doc Document) {
 	}
 }
 
+func (s *SearchEngine) avgDocLength() float64 {
+	if len(s.DocLengths) == 0 {
+		return 0
+	}
+	total := 0
+	for _, length := range s.DocLengths {
+		total += length
+	}
+	return float64(total) / float64(len(s.DocLengths))
+}
+
 func (s *SearchEngine) idf(term string) float64 {
 	df := len(s.Index[term])
 	if df == 0 {
 		return 0
 	}
 	N := len(s.Documents)
-	return math.Log(1 + float64(N)/float64(df))
+	return math.Log(1 + (float64(N)-float64(df)+0.5)/(float64(df)+0.5))
+}
+
+func (s *SearchEngine) bm25(tf int, docLength int, avgDocLength float64, idf float64) float64 {
+	numerator := float64(tf) * (k1 + 1)
+	denominator := float64(tf) +
+		k1*(1-b+b*(float64(docLength)/avgDocLength))
+	return idf * (numerator / denominator)
 }
 
 func (s *SearchEngine) Search(query string) []Document {
@@ -44,15 +70,22 @@ func (s *SearchEngine) Search(query string) []Document {
 	if len(tokens) == 0 {
 		return nil
 	}
+	avgDocLength := s.avgDocLength()
 	scores := make(map[int]float64)
 	for _, token := range tokens {
-		docFreqs, exists := s.Index[token]
+		postings, exists := s.Index[token]
 		if !exists {
 			continue
 		}
 		idf := s.idf(token)
-		for docID, tf := range docFreqs {
-			scores[docID] += float64(tf) * idf
+		for docID, tf := range postings {
+			docLength := s.DocLengths[docID]
+			scores[docID] += s.bm25(
+				tf,
+				docLength,
+				avgDocLength,
+				idf,
+			)
 		}
 	}
 	if len(scores) == 0 {
