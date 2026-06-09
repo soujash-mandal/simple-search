@@ -17,6 +17,6 @@ func main() {
 		Content: "MongoDB is a document database",
 	})
 
-	results := engine.Search("redis database")
+	results := engine.Search("redis")
 	fmt.Println("Results:", results)
 }

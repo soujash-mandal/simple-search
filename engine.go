@@ -4,13 +4,13 @@ import "sort"
 
 type SearchEngine struct {
 	Documents map[int]Document
-	Index     map[string]map[int]struct{}
+	Index     map[string]map[int]int
 }
 
 func NewSearchEngine() *SearchEngine {
 	return &SearchEngine{
 		Documents: make(map[int]Document),
-		Index:     make(map[string]map[int]struct{}),
+		Index:     make(map[string]map[int]int),
 	}
 }
 
@@ -21,12 +21,11 @@ func (s *SearchEngine) AddDocument(doc Document) {
 	tokens := append(titleTokens, contentTokens...)
 	for _, token := range tokens {
 		if _, exists := s.Index[token]; !exists {
-			s.Index[token] = make(map[int]struct{})
+			s.Index[token] = make(map[int]int)
 		}
-		s.Index[token][doc.ID] = struct{}{}
+		s.Index[token][doc.ID]++
 	}
 }
-
 
 func (s *SearchEngine) Search(query string) []Document {
 	tokens := tokenize(query)
@@ -35,8 +34,12 @@ func (s *SearchEngine) Search(query string) []Document {
 	}
 	scores := make(map[int]int)
 	for _, token := range tokens {
-		for id := range s.Index[token] {
-			scores[id]++
+		docFreqs, exists := s.Index[token]
+		if !exists {
+			continue
+		}
+		for id, tf := range docFreqs {
+			scores[id] += tf
 		}
 	}
 	if len(scores) == 0 {
@@ -49,9 +52,9 @@ func (s *SearchEngine) Search(query string) []Document {
 	sort.Slice(ids, func(i, j int) bool {
 		return scores[ids[i]] > scores[ids[j]]
 	})
-	results := make([]Document, len(ids))
-	for i, id := range ids {
-		results[i] = s.Documents[id]
+	results := make([]Document, 0, len(ids))
+	for _, id := range ids {
+		results = append(results, s.Documents[id])
 	}
 	return results
 }
