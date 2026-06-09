@@ -1,5 +1,7 @@
 package main
 
+import "sort"
+
 type SearchEngine struct {
 	Documents map[int]Document
 	Index     map[string]map[int]struct{}
@@ -13,23 +15,43 @@ func NewSearchEngine() *SearchEngine {
 }
 
 func (s *SearchEngine) AddDocument(doc Document) {
-	// Store the document
 	s.Documents[doc.ID] = doc
-
-	// Tokenize title and content
 	titleTokens := tokenize(doc.Title)
 	contentTokens := tokenize(doc.Content)
-
-	// Combine all tokens
 	tokens := append(titleTokens, contentTokens...)
-
-	// Build inverted index
 	for _, token := range tokens {
-		// Create a set for the token if it doesn't exist
 		if _, exists := s.Index[token]; !exists {
 			s.Index[token] = make(map[int]struct{})
 		}
-		// Add document ID to the token's posting list
 		s.Index[token][doc.ID] = struct{}{}
 	}
+}
+
+
+func (s *SearchEngine) Search(query string) []Document {
+	tokens := tokenize(query)
+	if len(tokens) == 0 {
+		return nil
+	}
+	scores := make(map[int]int)
+	for _, token := range tokens {
+		for id := range s.Index[token] {
+			scores[id]++
+		}
+	}
+	if len(scores) == 0 {
+		return nil
+	}
+	ids := make([]int, 0, len(scores))
+	for id := range scores {
+		ids = append(ids, id)
+	}
+	sort.Slice(ids, func(i, j int) bool {
+		return scores[ids[i]] > scores[ids[j]]
+	})
+	results := make([]Document, len(ids))
+	for i, id := range ids {
+		results[i] = s.Documents[id]
+	}
+	return results
 }
