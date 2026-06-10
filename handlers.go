@@ -53,3 +53,16 @@ func searchHandler(w http.ResponseWriter, r *http.Request) {
 	w.Header().Set("Content-Type", "application/json")
 	json.NewEncoder(w).Encode(results)
 }
+
+func autocompleteHandler(w http.ResponseWriter, r *http.Request) {
+	prefix := r.URL.Query().Get("q")
+
+	results := engine.AutoComplete(prefix)
+
+	w.Header().Set(
+		"Content-Type",
+		"application/json",
+	)
+
+	json.NewEncoder(w).Encode(results)
+}

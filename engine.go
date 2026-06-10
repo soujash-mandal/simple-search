@@ -14,6 +14,7 @@ type SearchEngine struct {
 	Documents  map[int]Document
 	Index      map[string]map[int]int
 	DocLengths map[int]int
+	Trie       *Trie
 }
 
 func NewSearchEngine() *SearchEngine {
@@ -21,6 +22,7 @@ func NewSearchEngine() *SearchEngine {
 		Documents:  make(map[int]Document),
 		Index:      make(map[string]map[int]int),
 		DocLengths: make(map[int]int),
+		Trie:       NewTrie(),
 	}
 }
 
@@ -35,7 +37,16 @@ func (s *SearchEngine) AddDocument(doc Document) {
 			s.Index[token] = make(map[int]int)
 		}
 		s.Index[token][doc.ID]++
+		s.Trie.Insert(token)
 	}
+}
+
+func (s *SearchEngine) GetAllDocuments() []Document {
+	docs := make([]Document, 0, len(s.Documents))
+	for _, doc := range s.Documents {
+		docs = append(docs, doc)
+	}
+	return docs
 }
 
 func (s *SearchEngine) avgDocLength() float64 {
@@ -105,10 +116,6 @@ func (s *SearchEngine) Search(query string) []Document {
 	return results
 }
 
-func (s *SearchEngine) GetAllDocuments() []Document {
-	docs := make([]Document, 0, len(s.Documents))
-	for _, doc := range s.Documents {
-		docs = append(docs, doc)
-	}
-	return docs
+func (s *SearchEngine) AutoComplete(prefix string) []string {
+	return s.Trie.AutoComplete(prefix)
 }
