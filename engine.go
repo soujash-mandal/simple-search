@@ -104,3 +104,11 @@ func (s *SearchEngine) Search(query string) []Document {
 	}
 	return results
 }
+
+func (s *SearchEngine) GetAllDocuments() []Document {
+	docs := make([]Document, 0, len(s.Documents))
+	for _, doc := range s.Documents {
+		docs = append(docs, doc)
+	}
+	return docs
+}

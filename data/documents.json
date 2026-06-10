@@ -1,0 +1,12 @@
+[
+  {
+    "ID": 1,
+    "Title": "Redis Guide",
+    "Content": "Redis is an in memory database"
+  },
+  {
+    "ID": 2,
+    "Title": "MongoDB Basics",
+    "Content": "MongoDB is a document database"
+  }
+]

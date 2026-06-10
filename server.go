@@ -6,7 +6,7 @@ import (
 )
 
 func StartServer() {
-	http.HandleFunc("/documents", addDocumentHandler)
+	http.HandleFunc("/documents", documentsHandler)
 	http.HandleFunc("/search", searchHandler)
 
 	log.Println("Server running on :8080")
