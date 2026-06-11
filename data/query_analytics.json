@@ -1,4 +1,4 @@
 {
-  "mongodb": 1,
-  "redis": 3
+  "mongodb": 4,
+  "redis": 12
 }

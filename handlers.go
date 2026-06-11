@@ -15,20 +15,25 @@ func getDocumentsHandler(w http.ResponseWriter) {
 }
 
 func addDocumentHandler(w http.ResponseWriter, r *http.Request) {
-	if r.Method != http.MethodPost {
-		http.Error(w, "method not allowed", http.StatusMethodNotAllowed)
-		return
-	}
 	var doc Document
 	if err := json.NewDecoder(r.Body).Decode(&doc); err != nil {
-		http.Error(w, err.Error(), http.StatusBadRequest)
+		http.Error(
+			w,
+			err.Error(),
+			http.StatusBadRequest,
+		)
+		return
+	}
+
+	if err := SaveDocumentMongo(doc); err != nil {
+		http.Error(
+			w,
+			err.Error(),
+			http.StatusInternalServerError,
+		)
 		return
 	}
 	engine.AddDocument(doc)
-	if err := SaveDocuments(engine.GetAllDocuments()); err != nil {
-		http.Error(w, err.Error(), http.StatusInternalServerError)
-		return
-	}
 	w.WriteHeader(http.StatusCreated)
 }
 
