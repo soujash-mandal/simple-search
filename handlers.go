@@ -66,3 +66,18 @@ func autocompleteHandler(w http.ResponseWriter, r *http.Request) {
 
 	json.NewEncoder(w).Encode(results)
 }
+
+func suggestHandler(w http.ResponseWriter, r *http.Request) {
+	query := r.URL.Query().Get("q")
+	results := engine.Suggest(
+		query,
+		2,
+	)
+	w.Header().Set(
+		"Content-Type",
+		"application/json",
+	)
+	json.NewEncoder(w).Encode(
+		results,
+	)
+}

@@ -73,3 +73,12 @@ func (t *Trie) AutoComplete(prefix string) []string {
 	return results
 }
 
+func (t *Trie) Words() []string {
+	var results []string
+	t.collect(
+		t.Root,
+		"",
+		&results,
+	)
+	return results
+}
