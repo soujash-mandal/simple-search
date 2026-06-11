@@ -11,18 +11,20 @@ const (
 )
 
 type SearchEngine struct {
-	Documents  map[int]Document
-	Index      map[string]map[int]int
-	DocLengths map[int]int
-	Trie       *Trie
+	Documents       map[int]Document
+	Index           map[string]map[int]int
+	PositionalIndex map[string]map[int][]int
+	DocLengths      map[int]int
+	Trie            *Trie
 }
 
 func NewSearchEngine() *SearchEngine {
 	return &SearchEngine{
-		Documents:  make(map[int]Document),
-		Index:      make(map[string]map[int]int),
-		DocLengths: make(map[int]int),
-		Trie:       NewTrie(),
+		Documents:       make(map[int]Document),
+		Index:           make(map[string]map[int]int),
+		PositionalIndex: make(map[string]map[int][]int),
+		DocLengths:      make(map[int]int),
+		Trie:            NewTrie(),
 	}
 }
 
@@ -32,11 +34,15 @@ func (s *SearchEngine) AddDocument(doc Document) {
 	contentTokens := tokenize(doc.Content)
 	tokens := append(titleTokens, contentTokens...)
 	s.DocLengths[doc.ID] = len(tokens)
-	for _, token := range tokens {
+	for pos, token := range tokens {
 		if _, exists := s.Index[token]; !exists {
 			s.Index[token] = make(map[int]int)
 		}
 		s.Index[token][doc.ID]++
+		if _, exists := s.PositionalIndex[token]; !exists {
+			s.PositionalIndex[token] = make(map[int][]int)
+		}
+		s.PositionalIndex[token][doc.ID] = append(s.PositionalIndex[token][doc.ID], pos)
 		s.Trie.Insert(token)
 	}
 }

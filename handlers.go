@@ -81,3 +81,10 @@ func suggestHandler(w http.ResponseWriter, r *http.Request) {
 		results,
 	)
 }
+
+func phraseSearchHandler(w http.ResponseWriter, r *http.Request) {
+	query := r.URL.Query().Get("q")
+	results := engine.PhraseSearch(query)
+	w.Header().Set("Content-Type", "application/json")
+	json.NewEncoder(w).Encode(results)
+}
