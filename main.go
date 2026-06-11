@@ -3,8 +3,12 @@ package main
 import "log"
 
 func main() {
-	docs, err := LoadDocuments()
+	analytics, err := LoadAnalytics()
+	if err == nil {
+		engine.QueryCounts = analytics
+	}
 
+	docs, err := LoadDocuments()
 	if err != nil {
 		log.Println("No existing documents found")
 	} else {

@@ -15,6 +15,7 @@ type SearchEngine struct {
 	Index           map[string]map[int]int
 	PositionalIndex map[string]map[int][]int
 	DocLengths      map[int]int
+	QueryCounts     map[string]int
 	Trie            *Trie
 }
 
@@ -24,6 +25,7 @@ func NewSearchEngine() *SearchEngine {
 		Index:           make(map[string]map[int]int),
 		PositionalIndex: make(map[string]map[int][]int),
 		DocLengths:      make(map[int]int),
+		QueryCounts:     make(map[string]int),
 		Trie:            NewTrie(),
 	}
 }
