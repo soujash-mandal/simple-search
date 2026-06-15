@@ -1,8 +1,10 @@
-package main
+package searchengine
+
+import "simple-search/search_engine/model"
 
 func (s *SearchEngine) PhraseSearch(
 	phrase string,
-) []Document {
+) []model.Document {
 
 	tokens := tokenize(phrase)
 
@@ -17,7 +19,7 @@ func (s *SearchEngine) PhraseSearch(
 		return nil
 	}
 
-	var results []Document
+	var results []model.Document
 
 	for docID, firstPositions := range firstPosting {
 

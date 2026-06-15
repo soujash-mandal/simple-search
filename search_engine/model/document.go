@@ -1,7 +1,7 @@
-package main
+package model
 
 type Document struct {
-	ID      int
+	ID      string
 	Title   string
 	Content string
 }

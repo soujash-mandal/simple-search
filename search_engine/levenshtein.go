@@ -1,4 +1,4 @@
-package main
+package searchengine
 
 func Levenshtein(a, b string) int {
 	m := len(a)
