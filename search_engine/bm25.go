@@ -16,7 +16,7 @@ func (s *SearchEngine) avgDocLength() float64 {
 	return float64(total) / float64(len(s.DocLengths))
 }
 
-func (s *SearchEngine) bm25(tf int, docLength int, avgDocLength float64, idf float64) float64 {
+func (s *SearchEngine) bm25(tf float64, docLength int, avgDocLength float64, idf float64) float64 {
 	numerator := float64(tf) * (k1 + 1)
 	denominator := float64(tf) +
 		k1*(1-b+b*(float64(docLength)/avgDocLength))

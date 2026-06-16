@@ -8,6 +8,7 @@ import (
 type SearchEngine struct {
 	Documents       map[string]model.Document
 	Index           map[string]map[string]int
+	TitleIndex      map[string]map[string]int
 	PositionalIndex map[string]map[string][]int
 	DocLengths      map[string]int
 	Trie            *Trie
@@ -17,6 +18,7 @@ func NewSearchEngine() *SearchEngine {
 	return &SearchEngine{
 		Documents:       make(map[string]model.Document),
 		Index:           make(map[string]map[string]int),
+		TitleIndex:      make(map[string]map[string]int),
 		PositionalIndex: make(map[string]map[string][]int),
 		DocLengths:      make(map[string]int),
 		Trie:            NewTrie(),
@@ -29,6 +31,14 @@ func (s *SearchEngine) AddDocument(doc model.Document) {
 	contentTokens := tokenize(doc.Content)
 	tokens := append(titleTokens, contentTokens...)
 	s.DocLengths[doc.ID] = len(tokens)
+
+	for _, token := range titleTokens {
+		if _, exists := s.TitleIndex[token]; !exists {
+			s.TitleIndex[token] = make(map[string]int)
+		}
+		s.TitleIndex[token][doc.ID]++
+	}
+
 	for pos, token := range tokens {
 		if _, exists := s.Index[token]; !exists {
 			s.Index[token] = make(map[string]int)
@@ -62,14 +72,11 @@ func (s *SearchEngine) Search(query string) []model.Document {
 		if !exists {
 			continue
 		}
-		idf := s.idf(token)
-		for docID, tf := range postings {
-			docLength := s.DocLengths[docID]
-			scores[docID] += s.bm25(
-				tf,
-				docLength,
+		for docID := range postings {
+			scores[docID] += s.scoreToken(
+				token,
+				docID,
 				avgDocLength,
-				idf,
 			)
 		}
 	}
