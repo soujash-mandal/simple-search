@@ -10,6 +10,12 @@ import (
 	"go.mongodb.org/mongo-driver/mongo"
 )
 
+type MongoDocument struct {
+	ID      primitive.ObjectID `bson:"_id,omitempty"`
+	Title   string             `bson:"title"`
+	Content string             `bson:"content"`
+}
+
 type MongoSearchRepository struct {
 	collection *mongo.Collection
 }
@@ -63,14 +69,22 @@ func (r *MongoSearchRepository) GetAll() (
 
 	defer cursor.Close(ctx)
 
-	var docs []models.Document
+	var mongoDocs []MongoDocument
 
 	if err := cursor.All(
 		ctx,
-		&docs,
+		&mongoDocs,
 	); err != nil {
 		return nil, err
 	}
 
-	return docs, nil
+	var domain_docs []models.Document
+	for _, doc := range mongoDocs {
+		domain_docs = append(
+			domain_docs,
+			models.Document{ID: doc.ID.Hex(), Title: doc.Title, Content: doc.Content},
+		)
+	}
+
+	return domain_docs, nil
 }
