@@ -1,9 +1,11 @@
 package repository
 
-import model "simple-search/search_service/model"
-
+import (
+	internal_model "simple-search/internal/model"
+	model "simple-search/search_service/model"
+)
 
 type SearchRepository interface {
-	Save(doc model.CreateDocumentRequest) (model.Document, error)
-	GetAll() ([]model.Document, error)
+	Save(doc model.CreateDocumentRequest) (internal_model.Document, error)
+	GetAll() ([]internal_model.Document, error)
 }

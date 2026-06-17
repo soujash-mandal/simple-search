@@ -2,9 +2,8 @@ package searchservice
 
 import (
 	analyticsservice "simple-search/analytics_service"
+	internal_model "simple-search/internal/model"
 	searchengine "simple-search/search_engine"
-	search_engine_model "simple-search/search_engine/model"
-	"simple-search/search_service/mapper"
 	"simple-search/search_service/model"
 	"simple-search/search_service/repository"
 )
@@ -32,31 +31,26 @@ func (s *SearchService) AddDocument(doc model.CreateDocumentRequest) {
 		Title:   doc.Title,
 		Content: doc.Content,
 	})
-	s.engine.AddDocument(search_engine_model.Document{
-		ID:      new_doc.ID,
-		Title:   doc.Title,
-		Content: doc.Content,
-	})
+	s.engine.AddDocument(new_doc)
 }
 
 func (s *SearchService) LoadDocuments() {
-	repo_docs, _ := s.repository.GetAll()
-	engine_docs := mapper.DocumentServiceToEngine(repo_docs)
-	for _, doc := range engine_docs {
+	docs, _ := s.repository.GetAll()
+	for _, doc := range docs {
 		s.engine.AddDocument(doc)
 	}
 
 }
 
-func (s *SearchService) GetAllDocuments() []model.Document {
+func (s *SearchService) GetAllDocuments() []internal_model.Document {
 	results, _ := s.repository.GetAll()
 	return results
 }
 
-func (s *SearchService) Search(query string) []model.Document {
+func (s *SearchService) Search(query string) []internal_model.Document {
 	results := s.engine.Search(query)
 	s.analytics_service.RecordQuery(query)
-	return mapper.DocumentEngineToService(results)
+	return results
 }
 
 func (s *SearchService) AutoComplete(prefix string) []string {
@@ -69,7 +63,6 @@ func (s *SearchService) Suggest(query string) []string {
 
 func (s *SearchService) PhraseSearch(
 	phrase string,
-) []model.Document {
-	engine_docs := s.engine.PhraseSearch(phrase)
-	return mapper.DocumentEngineToService(engine_docs)
+) []internal_model.Document {
+	return s.engine.PhraseSearch(phrase)
 }

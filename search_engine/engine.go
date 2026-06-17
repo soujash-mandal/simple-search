@@ -1,12 +1,12 @@
 package searchengine
 
 import (
-	"simple-search/search_engine/model"
+	internal_model "simple-search/internal/model"
 	"sort"
 )
 
 type SearchEngine struct {
-	Documents       map[string]model.Document
+	Documents       map[string]internal_model.Document
 	Index           map[string]map[string]int
 	TitleIndex      map[string]map[string]int
 	PositionalIndex map[string]map[string][]int
@@ -16,7 +16,7 @@ type SearchEngine struct {
 
 func NewSearchEngine() *SearchEngine {
 	return &SearchEngine{
-		Documents:       make(map[string]model.Document),
+		Documents:       make(map[string]internal_model.Document),
 		Index:           make(map[string]map[string]int),
 		TitleIndex:      make(map[string]map[string]int),
 		PositionalIndex: make(map[string]map[string][]int),
@@ -25,7 +25,7 @@ func NewSearchEngine() *SearchEngine {
 	}
 }
 
-func (s *SearchEngine) AddDocument(doc model.Document) {
+func (s *SearchEngine) AddDocument(doc internal_model.Document) {
 	s.Documents[doc.ID] = doc
 	titleTokens := tokenize(doc.Title)
 	contentTokens := tokenize(doc.Content)
@@ -52,15 +52,15 @@ func (s *SearchEngine) AddDocument(doc model.Document) {
 	}
 }
 
-func (s *SearchEngine) GetAllDocuments() []model.Document {
-	docs := make([]model.Document, 0, len(s.Documents))
+func (s *SearchEngine) GetAllDocuments() []internal_model.Document {
+	docs := make([]internal_model.Document, 0, len(s.Documents))
 	for _, doc := range s.Documents {
 		docs = append(docs, doc)
 	}
 	return docs
 }
 
-func (s *SearchEngine) Search(query string) []model.Document {
+func (s *SearchEngine) Search(query string) []internal_model.Document {
 	tokens := tokenize(query)
 	if len(tokens) == 0 {
 		return nil
@@ -90,7 +90,7 @@ func (s *SearchEngine) Search(query string) []model.Document {
 	sort.Slice(ids, func(i, j int) bool {
 		return scores[ids[i]] > scores[ids[j]]
 	})
-	results := make([]model.Document, 0, len(ids))
+	results := make([]internal_model.Document, 0, len(ids))
 	for _, id := range ids {
 		results = append(results, s.Documents[id])
 	}

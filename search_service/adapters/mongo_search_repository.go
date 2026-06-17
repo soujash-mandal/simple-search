@@ -2,7 +2,8 @@ package searchadapters
 
 import (
 	"context"
-	models "simple-search/search_service/model"
+	internal_model "simple-search/internal/model"
+	"simple-search/search_service/model"
 	"time"
 
 	"go.mongodb.org/mongo-driver/bson"
@@ -29,8 +30,8 @@ func NewMongoSearchRepository(
 }
 
 func (r *MongoSearchRepository) Save(
-	doc models.CreateDocumentRequest,
-) (models.Document, error) {
+	doc model.CreateDocumentRequest,
+) (internal_model.Document, error) {
 	ctx, cancel := context.WithTimeout(
 		context.Background(),
 		5*time.Second,
@@ -40,7 +41,7 @@ func (r *MongoSearchRepository) Save(
 		ctx,
 		doc,
 	)
-	new_doc := models.Document{
+	new_doc := internal_model.Document{
 		ID:      result.InsertedID.(primitive.ObjectID).Hex(),
 		Title:   doc.Title,
 		Content: doc.Content,
@@ -49,7 +50,7 @@ func (r *MongoSearchRepository) Save(
 }
 
 func (r *MongoSearchRepository) GetAll() (
-	[]models.Document,
+	[]internal_model.Document,
 	error,
 ) {
 	ctx, cancel := context.WithTimeout(
@@ -78,11 +79,11 @@ func (r *MongoSearchRepository) GetAll() (
 		return nil, err
 	}
 
-	var domain_docs []models.Document
+	var domain_docs []internal_model.Document
 	for _, doc := range mongoDocs {
 		domain_docs = append(
 			domain_docs,
-			models.Document{ID: doc.ID.Hex(), Title: doc.Title, Content: doc.Content},
+			internal_model.Document{ID: doc.ID.Hex(), Title: doc.Title, Content: doc.Content},
 		)
 	}
 
