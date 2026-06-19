@@ -55,37 +55,35 @@ func (r *MongoSearchRepository) GetAll() (
 ) {
 	ctx, cancel := context.WithTimeout(
 		context.Background(),
-		10*time.Second,
+		30*time.Second,
 	)
 	defer cancel()
 
-	cursor, err := r.collection.Find(
-		ctx,
-		bson.M{},
-	)
-
+	cursor, err := r.collection.Find(ctx, bson.M{})
 	if err != nil {
 		return nil, err
 	}
-
 	defer cursor.Close(ctx)
 
-	var mongoDocs []MongoDocument
+	var docs []internal_model.Document
 
-	if err := cursor.All(
-		ctx,
-		&mongoDocs,
-	); err != nil {
+	for cursor.Next(ctx) {
+		var mongoDoc MongoDocument
+
+		if err := cursor.Decode(&mongoDoc); err != nil {
+			return nil, err
+		}
+
+		docs = append(docs, internal_model.Document{
+			ID:      mongoDoc.ID.Hex(),
+			Title:   mongoDoc.Title,
+			Content: mongoDoc.Content,
+		})
+	}
+
+	if err := cursor.Err(); err != nil {
 		return nil, err
 	}
 
-	var domain_docs []internal_model.Document
-	for _, doc := range mongoDocs {
-		domain_docs = append(
-			domain_docs,
-			internal_model.Document{ID: doc.ID.Hex(), Title: doc.Title, Content: doc.Content},
-		)
-	}
-
-	return domain_docs, nil
+	return docs, nil
 }
