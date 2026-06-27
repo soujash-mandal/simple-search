@@ -5,11 +5,19 @@
     "version": "0.2.0",
     "configurations": [
         {
-            "name": "Debug Simple Search",
+            "name": "Debug Server",
             "type": "go",
             "request": "launch",
             "mode": "auto",
             "program": "${workspaceFolder}/cmd/server",
+            "cwd": "${workspaceFolder}"
+        },
+        {
+            "name": "Debug Indexer",
+            "type": "go",
+            "request": "launch",
+            "mode": "auto",
+            "program": "${workspaceFolder}/cmd/indexer",
             "cwd": "${workspaceFolder}"
         }
     ]
